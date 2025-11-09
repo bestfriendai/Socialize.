@@ -12,7 +12,7 @@ import SwiftUI
 import Combine
 import UniformTypeIdentifiers
 
-class Person: Identifiable, Codable, ObservableObject, Transferable {
+class Person: Identifiable, Codable, ObservableObject, Transferable, NSCopying {
     
     static var transferRepresentation: some TransferRepresentation {
         CodableRepresentation(contentType: .json)
@@ -28,6 +28,17 @@ class Person: Identifiable, Codable, ObservableObject, Transferable {
         self.name = name
         self.lastContact = lastContact
         self.priority = priority
+    }
+    
+    func copy(with zone: NSZone? = nil) -> Any {
+        let copy = Person(name: self.name, lastContact: self.lastContact, priority: self.priority)
+        return copy
+    }
+    
+    func clear() {
+        self.name = ""
+        self.lastContact = Date.now
+        self.priority = 0
     }
 }
 
@@ -134,7 +145,7 @@ extension UTType {
 }
 
 // Extend Array to conform to Transferable when Element is Transferable
-extension Array: Transferable where Element: Transferable, Element: Codable {
+extension Array: @retroactive Transferable where Element: Transferable, Element: Codable {
     public static var transferRepresentation: some TransferRepresentation {
         CodableRepresentation(contentType: .json)
     }

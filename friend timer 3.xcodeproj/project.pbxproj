@@ -14,13 +14,12 @@
 		3716B54C28F36DB500FE27FA /* ModelData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3716B54B28F36DB500FE27FA /* ModelData.swift */; };
 		3716B54E28F36DCB00FE27FA /* manipulateData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3716B54D28F36DCB00FE27FA /* manipulateData.swift */; };
 		3716B55028F37E9100FE27FA /* FriendRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3716B54F28F37E9100FE27FA /* FriendRow.swift */; };
-		371738892C73F45D0019C5A2 /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 371738882C73F45D0019C5A2 /* DataManager.swift */; };
 		372878952913DF5900501CF1 /* UserDefaultsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 372878942913DF5900501CF1 /* UserDefaultsHandler.swift */; };
-		37524A7E2EB7872B00D0C030 /* AddNewPersonSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37524A7D2EB7872B00D0C030 /* AddNewPersonSheet.swift */; };
 		375335C92905A0E100E4585B /* NotificationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 375335C82905A0E100E4585B /* NotificationHandler.swift */; };
 		37546DDB29283EA40075EDC2 /* UpdaterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37546DDA29283EA40075EDC2 /* UpdaterViewModel.swift */; };
 		379EA79C291EA50C00840E09 /* SampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 379EA79B291EA50C00840E09 /* SampleData.swift */; };
 		37E9341B28F4A51300FB15BC /* AddNewPersonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E9341A28F4A51300FB15BC /* AddNewPersonView.swift */; };
+		37E9342028F859D000FB15BC /* AddNewPersonCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E9341F28F859D000FB15BC /* AddNewPersonCache.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,13 +31,12 @@
 		3716B54B28F36DB500FE27FA /* ModelData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelData.swift; sourceTree = "<group>"; };
 		3716B54D28F36DCB00FE27FA /* manipulateData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = manipulateData.swift; sourceTree = "<group>"; };
 		3716B54F28F37E9100FE27FA /* FriendRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendRow.swift; sourceTree = "<group>"; };
-		371738882C73F45D0019C5A2 /* DataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
 		372878942913DF5900501CF1 /* UserDefaultsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsHandler.swift; sourceTree = "<group>"; };
-		37524A7D2EB7872B00D0C030 /* AddNewPersonSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddNewPersonSheet.swift; sourceTree = "<group>"; };
 		375335C82905A0E100E4585B /* NotificationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationHandler.swift; sourceTree = "<group>"; };
 		37546DDA29283EA40075EDC2 /* UpdaterViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterViewModel.swift; sourceTree = "<group>"; };
 		379EA79B291EA50C00840E09 /* SampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleData.swift; sourceTree = "<group>"; };
 		37E9341A28F4A51300FB15BC /* AddNewPersonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddNewPersonView.swift; sourceTree = "<group>"; };
+		37E9341F28F859D000FB15BC /* AddNewPersonCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddNewPersonCache.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,7 +69,6 @@
 		3716B53C28F36AA600FE27FA /* friend timer */ = {
 			isa = PBXGroup;
 			children = (
-				371738882C73F45D0019C5A2 /* DataManager.swift */,
 				3716B53D28F36AA600FE27FA /* friend_timerApp.swift */,
 				3716B53F28F36AA600FE27FA /* ContentView.swift */,
 				37A0623428F3915600A78B33 /* views */,
@@ -99,7 +96,6 @@
 			children = (
 				3716B54F28F37E9100FE27FA /* FriendRow.swift */,
 				37E9341A28F4A51300FB15BC /* AddNewPersonView.swift */,
-				37524A7D2EB7872B00D0C030 /* AddNewPersonSheet.swift */,
 			);
 			path = views;
 			sourceTree = "<group>";
@@ -108,6 +104,7 @@
 			isa = PBXGroup;
 			children = (
 				3716B54B28F36DB500FE27FA /* ModelData.swift */,
+				37E9341F28F859D000FB15BC /* AddNewPersonCache.swift */,
 				372878942913DF5900501CF1 /* UserDefaultsHandler.swift */,
 			);
 			path = Model;
@@ -184,11 +181,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				37E9341B28F4A51300FB15BC /* AddNewPersonView.swift in Sources */,
-				371738892C73F45D0019C5A2 /* DataManager.swift in Sources */,
 				372878952913DF5900501CF1 /* UserDefaultsHandler.swift in Sources */,
 				375335C92905A0E100E4585B /* NotificationHandler.swift in Sources */,
 				379EA79C291EA50C00840E09 /* SampleData.swift in Sources */,
-				37524A7E2EB7872B00D0C030 /* AddNewPersonSheet.swift in Sources */,
+				37E9342028F859D000FB15BC /* AddNewPersonCache.swift in Sources */,
 				3716B54028F36AA600FE27FA /* ContentView.swift in Sources */,
 				37546DDB29283EA40075EDC2 /* UpdaterViewModel.swift in Sources */,
 				3716B54C28F36DB500FE27FA /* ModelData.swift in Sources */,
@@ -331,12 +327,11 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.nicolasfuchs.friend-timer";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -361,12 +356,11 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.nicolasfuchs.friend-timer";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

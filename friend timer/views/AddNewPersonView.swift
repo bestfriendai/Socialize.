@@ -15,7 +15,7 @@ let datesUntilNow = ...Date.now
 
 struct AddNewPersonView: View {
     
-    @ObservedObject var newPerson: NewPerson
+    @ObservedObject var newPerson: Person
     #warning("TODO: refresh Date every second or so -> should always display current date in selector/if not changed add current Date (Date.now) to newPerson")
     var body: some View {
         VStack {
@@ -45,6 +45,6 @@ struct AddNewPersonView: View {
 
 struct AddNewPersonView_Previews: PreviewProvider {
     static var previews: some View {
-        AddNewPersonView(newPerson: NewPerson())
+        AddNewPersonView(newPerson: Person())
     }
 }

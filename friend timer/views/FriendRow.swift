@@ -11,7 +11,8 @@ import SwiftUI
 struct FriendRow: View {
     @StateObject var friend: Person
     @State var showAlert: Bool = false
-    
+    @State var showSheet: Bool = false
+
     @EnvironmentObject var modelData: ModelData
     
     @StateObject var lastContactTimer = UpdaterViewModel() //Updates View every 60 second
@@ -34,8 +35,15 @@ struct FriendRow: View {
     
     }
     
+    func updatePerson(person: Person) -> Void {
+        friend.name = person.name
+        friend.lastContact = person.lastContact
+        friend.priority = person.priority
+        //TODO: update view after editing
+    }
+    
     var body: some View {
-        Button(action: {showAlert = true}){
+        Button(action: {showSheet = true}){
             HStack{
                 VStack(alignment: .leading) {
                     Text(friend.name)
@@ -52,15 +60,20 @@ struct FriendRow: View {
             }
         }
         .accentColor(/*@START_MENU_TOKEN@*/.black/*@END_MENU_TOKEN@*/)
-        .alert("Reset timer?", isPresented: $showAlert) {
-            Button("No"){
-                
-            }
-            Button("Yes"){
-                setLastContactToNow(id: friend.id)
-                scheduleNotification(Person: friend)
-            }
+        .sheet(isPresented: $showSheet, onDismiss: {
+            Alert(title: Text("Discard changes?"), primaryButton: .default(Text("No")), secondaryButton: .destructive(Text("Yes"), action: {showSheet = false}))
+        }) {
+            AddNewPersonSheet(newPerson: friend.copy() as! Person, isPresentingAddView: $showSheet, function: updatePerson)
         }
+//        .alert("Reset timer?", isPresented: $showAlert) {
+//            Button("No"){
+//                
+//            }
+//            Button("Yes"){
+//                setLastContactToNow(id: friend.id)
+//                scheduleNotification(Person: friend)
+//            }
+//        }
 
     }
 }

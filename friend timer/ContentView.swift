@@ -11,7 +11,7 @@ struct ContentView: View {
     
     @Environment(ModelData.self) private var modelData
     
-    @ObservedObject var newPerson: NewPerson = NewPerson()
+    @ObservedObject var newPerson: Person = Person()
     
     @State private var isPresentingAddView = false
     @State private var importing = false
@@ -24,9 +24,9 @@ struct ContentView: View {
         modelData.friends.remove(atOffsets: offsets)
     }
     
-    func addNewPerson(name:String, lastContact:Date = Date.now, priority:Int) {
+    func addNewPerson(person: Person) -> Void {
         //add a new friend struct with a given name and given date; if no date is provided it uses the current date
-        modelData.friends.append(Person(name:name, lastContact:lastContact, priority:priority))
+        modelData.friends.append(person)
         modelData.friends.sort {
             $0.lastContact < $1.lastContact
         }
@@ -116,9 +116,7 @@ struct ContentView: View {
                         
                         // Export Data
                         ShareLink(item: modelData.friends, preview: SharePreview("Backup Data"))
-                        Spacer()
                         EditButton()
-                        Spacer()
                         
                         // Add new Friend to List
                         Button(action: {
@@ -126,35 +124,10 @@ struct ContentView: View {
                         }){
                             Image(systemName: "plus")
                         }
-                        Spacer()
                     }
                 }
                 .sheet(isPresented: $isPresentingAddView) {
-                    NavigationView {
-                        AddNewPersonView(newPerson: newPerson)
-                            .navigationTitle($newPerson.name)
-                            .toolbar {
-                                ToolbarItem(placement: .cancellationAction) {
-                                    Button("Cancel") {
-                                        newPerson.clear()
-                                        isPresentingAddView = false
-                                    }
-                                }
-                                ToolbarItem(placement: .confirmationAction) {
-                                    Button("Add") {
-                                        addNewPerson(name: newPerson.name, lastContact: newPerson.lastContact, priority: newPerson.priority)    //Übergibt Daten aus newPerson ("Cache" für die neu angelegte Person in AddNewPersonView) an ModelData
-                                        
-                                        isPresentingAddView = false
-                                        
-                                        scheduleNotification(Person: newPerson)
-      
-                                        newPerson.clear()   //Gibt das Modell newPerson frei
-                                        
-                                        saveToDisk()
-                                    }
-                                }
-                            }
-                    }
+                    AddNewPersonSheet(newPerson: newPerson, isPresentingAddView: $isPresentingAddView, function: addNewPerson)
                 }
             }
             .onChange(of: scenePhase) { phase in

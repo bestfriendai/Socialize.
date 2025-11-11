@@ -12,7 +12,7 @@ import SwiftUI
 import Combine
 import UniformTypeIdentifiers
 
-class Person: Identifiable, Codable, ObservableObject, Transferable, NSCopying {
+@Observable class Person: Identifiable, Codable, Transferable, NSCopying {
     
     static var transferRepresentation: some TransferRepresentation {
         CodableRepresentation(contentType: .json)
@@ -42,8 +42,17 @@ class Person: Identifiable, Codable, ObservableObject, Transferable, NSCopying {
     }
 }
 
-@Observable final class ModelData: ObservableObject, Codable, Transferable {
+@Observable class ModelData: Codable, Transferable {
     var friends: [Person] = []
+    { didSet {self.save(completion: {result in
+        switch result {
+        case .failure(let error):
+            fatalError("Error while saving friends Array in ModelData to file "+error.localizedDescription)
+        case .success(let savedPersonCount):
+            print("Saved "+String(savedPersonCount)+" Entities to file")
+        }
+    })}
+    }
     
     // make @Published variable conform to codable
     enum CodingKeys: String, CodingKey {
@@ -68,38 +77,46 @@ class Person: Identifiable, Codable, ObservableObject, Transferable, NSCopying {
     
     
     //function for generating URL for "friends.data"
-    static func fileURL() throws -> URL {
+    func fileURL() throws -> URL {
         try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
             .appendingPathComponent("friends.data")
     }
     
-    
-    static func loadFromDisk(completion: @escaping (Result<[Person], Error>)->Void) {
-        do {
-            let fileURL = try fileURL()
-
-            load(fileURL: fileURL) { result in
-                switch result {
-                case .failure(let error):
-                    DispatchQueue.main.async {
-                        completion(.failure(error))
-                    }
-                case .success(let personArrayFromFile):
-                    DispatchQueue.main.async {
-                        completion(.success(personArrayFromFile))
-                    }
-                }
-            }
-        } catch {
-            DispatchQueue.main.async {
-                completion(.failure(error))
-            }
+    func addNewPerson(person: Person) -> Void {
+        //add a new friend struct with a given name and given date; if no date is provided it uses the current date
+        self.friends.append(person)
+        self.friends.sort {
+            $0.lastContact < $1.lastContact
         }
     }
     
     
+    func loadFromDisk() {
+        do {
+            let fileURL = try self.fileURL()
+
+            load(fileURL: fileURL) { result in
+                switch result {
+                case .failure(let error):
+                    fatalError("Error in loading modelData Array from file: "+error.localizedDescription)
+                case .success(let personArrayFromFile):
+                    DispatchQueue.main.async {
+                        self.friends = personArrayFromFile
+                    }
+                    print("Loading completed: ")
+                    for person in personArrayFromFile {
+                        print(person.name)
+                    }
+                }
+            }
+        } catch {
+            fatalError("Error in creating fileURL for modelData: "+error.localizedDescription)
+        }
+    }
+
+    
     //function for loading data
-    static func load(fileURL: URL, completion: @escaping (Result<[Person], Error>)->Void) {
+    func load(fileURL: URL, completion: @escaping (Result<[Person], Error>)->Void) {
         DispatchQueue.global(qos: .background).async {
             do {
                 guard let file = try? FileHandle(forReadingFrom: fileURL) else {
@@ -121,19 +138,30 @@ class Person: Identifiable, Codable, ObservableObject, Transferable, NSCopying {
     }
     
     //function for saving data through a completion handler
-    static func save(friends: [Person], completion: @escaping (Result<Int, Error>)->Void){
+    private func save(completion: @escaping (Result<Int, Error>)->Void){
         DispatchQueue.global(qos: .background).async {
             do {
-                let data = try JSONEncoder().encode(friends)
-                let fileURL = try fileURL()
+                let data = try JSONEncoder().encode(self.friends)
+                let fileURL = try self.fileURL()
                 try data.write(to: fileURL)
                 DispatchQueue.main.async {
-                    completion(.success(friends.count))
+                    completion(.success(self.friends.count))
                 }
             }catch{
                 DispatchQueue.main.async {
                     completion(.failure(error))
                 }
+            }
+        }
+    }
+    
+    func saveToDisk() {
+        self.save() { result in
+            switch result {
+            case .failure(let error):
+                fatalError("Error while saving friends Array in ModelData to file "+error.localizedDescription)
+            case .success(let savedPersonCount):
+                print("Saved "+String(savedPersonCount)+" Entities to file")
             }
         }
     }

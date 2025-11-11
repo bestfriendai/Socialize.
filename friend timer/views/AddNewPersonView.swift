@@ -15,7 +15,7 @@ let datesUntilNow = ...Date.now
 
 struct AddNewPersonView: View {
     
-    @ObservedObject var newPerson: Person
+    @Bindable var newPerson: Person
     #warning("TODO: refresh Date every second or so -> should always display current date in selector/if not changed add current Date (Date.now) to newPerson")
     var body: some View {
         VStack {

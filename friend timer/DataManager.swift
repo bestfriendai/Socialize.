@@ -20,20 +20,6 @@ class DataManager {
     }
     
     func loadFromDisk() {
-        ModelData.loadFromDisk { result in
-            switch result {
-            case .failure(let error):
-                fatalError("Error in loading modelData Array from file: "+error.localizedDescription)
-            case .success(let personArrayFromFile):
-                
-                print("Loading completed: ")
-                for person in personArrayFromFile {
-                    print(person.name)
-                }
-                DispatchQueue.main.async {
-                    self.modelData.friends = personArrayFromFile
-                }
-            }
-        }
+        modelData.loadFromDisk()
     }
 }

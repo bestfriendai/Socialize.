@@ -8,22 +8,11 @@
 import SwiftUI
 
 struct AddNewPersonSheet: View {
-    @ObservedObject var newPerson: Person
+    @Bindable var newPerson: Person
     @Binding var isPresentingAddView: Bool
-    var function: (_ person: Person) -> Void
+    var returnPersonTo: (Person) -> Void
     
     @Environment(ModelData.self) private var modelData
-    
-    func saveToDisk() {
-        ModelData.save(friends: modelData.friends) { result in
-            switch result {
-            case .failure(let error):
-                fatalError("Error while saving friends Array in ModelData to file "+error.localizedDescription)
-            case .success(let savedPersonCount):
-                print("Saved "+String(savedPersonCount)+" Entities to file")
-            }
-        }
-    }
     
     var body: some View {
         NavigationView {
@@ -38,15 +27,10 @@ struct AddNewPersonSheet: View {
                     }
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Add") {
-                            function(newPerson)
+                            returnPersonTo(newPerson)
 
                             isPresentingAddView = false
-                            
                             scheduleNotification(Person: newPerson)
-
-                            newPerson.clear()   //Gibt das Modell newPerson frei
-                            
-                            saveToDisk()
                         }
                     }
                 }
@@ -55,5 +39,5 @@ struct AddNewPersonSheet: View {
 }
 
 #Preview {
-    AddNewPersonSheet(newPerson: Person(name: "Test Person", lastContact: Date(), priority: 1), isPresentingAddView: Binding.constant(true), function:  { _ in })
+    AddNewPersonSheet(newPerson: Person(name: "Test Person", lastContact: Date(), priority: 1), isPresentingAddView: Binding.constant(true), returnPersonTo:  { _ in })
 }

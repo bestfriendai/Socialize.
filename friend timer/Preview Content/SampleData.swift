@@ -14,7 +14,7 @@ var friendsSamples: [Person] = [Person(name: "Test1", lastContact: Date.now), Pe
 
 
 func dataToModelData () {
-    @EnvironmentObject var modelData: ModelData
+    @Environment(ModelData.self) var modelData
     for friend in friendsSamples {
         modelData.friends.append(friend)
     }

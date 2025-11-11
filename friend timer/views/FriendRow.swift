@@ -9,24 +9,19 @@ import Foundation
 import SwiftUI
 
 struct FriendRow: View {
-    @StateObject var friend: Person
+    @State var friend: Person
     @State var showAlert: Bool = false
     @State var showSheet: Bool = false
 
-    @EnvironmentObject var modelData: ModelData
-    
+    @Environment(ModelData.self) private var modelData: ModelData
+
     @StateObject var lastContactTimer = UpdaterViewModel() //Updates View every 60 second
     
     func setLastContactToNow(id: UUID) {
         /*Takes in the id of a Person of which the lastContact property should be set to the Date "now"*/
         
         //Iterating over every Person in the friends array to find the one with the id where looking for, then setting its lastContact property to the Date "now"
-        for person in modelData.friends {
-            if person.id == id {
-                person.lastContact = Date.now
-                break
-            }
-        }
+        modelData.friends.first(where: { $0.id == id} )?.lastContact = Date.now
         
         //sorting Persons from lastContact again, as this property could have changed
         modelData.friends.sort {
@@ -39,11 +34,15 @@ struct FriendRow: View {
         friend.name = person.name
         friend.lastContact = person.lastContact
         friend.priority = person.priority
-        //TODO: update view after editing
+        modelData.saveToDisk()
+    }
+    
+    func delete() {
+        modelData.friends.removeAll(where: { $0.id == friend.id })
     }
     
     var body: some View {
-        Button(action: {showSheet = true}){
+        Button(action: {showAlert = true}){
             HStack{
                 VStack(alignment: .leading) {
                     Text(friend.name)
@@ -59,21 +58,33 @@ struct FriendRow: View {
                 }
             }
         }
+        .swipeActions() {
+            Button(action:{showSheet = true}) {
+                Label("Edit", systemImage: "pencil.line")
+                    .labelStyle(IconOnlyLabelStyle())
+                    .tint(.orange)
+            }
+            Button(role: .destructive, action:{delete()}) {
+                Label("Delete", systemImage: "trash")
+                    .labelStyle(IconOnlyLabelStyle())
+                
+            }
+        }
         .accentColor(/*@START_MENU_TOKEN@*/.black/*@END_MENU_TOKEN@*/)
         .sheet(isPresented: $showSheet, onDismiss: {
-            Alert(title: Text("Discard changes?"), primaryButton: .default(Text("No")), secondaryButton: .destructive(Text("Yes"), action: {showSheet = false}))
+            //Alert(title: Text("Discard changes?"), primaryButton: .default(Text("No")), secondaryButton: .destructive(Text("Yes"), action: {showSheet = false}))
         }) {
-            AddNewPersonSheet(newPerson: friend.copy() as! Person, isPresentingAddView: $showSheet, function: updatePerson)
+            AddNewPersonSheet(newPerson: friend.copy() as! Person, isPresentingAddView: $showSheet, returnPersonTo: updatePerson)
         }
-//        .alert("Reset timer?", isPresented: $showAlert) {
-//            Button("No"){
-//                
-//            }
-//            Button("Yes"){
-//                setLastContactToNow(id: friend.id)
-//                scheduleNotification(Person: friend)
-//            }
-//        }
+        .alert("Reset timer?", isPresented: $showAlert) {
+            Button("No"){
+                
+            }
+            Button("Yes"){
+                setLastContactToNow(id: friend.id)
+                scheduleNotification(Person: friend)
+            }
+        }
 
     }
 }

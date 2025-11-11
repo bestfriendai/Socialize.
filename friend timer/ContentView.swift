@@ -11,12 +11,13 @@ struct ContentView: View {
     
     @Environment(ModelData.self) private var modelData
     
-    @ObservedObject var newPerson: Person = Person()
+    @State var newPerson: Person = Person()
     
     @State private var isPresentingAddView = false
     @State private var importing = false
     @State private var errorOccured = false
     @State private var details: Error?
+    @State private var searchFieldText: String = ""
     
     @Environment(\.scenePhase) private var scenePhase   //operational State of the app gets saved to scenePhase from @Environment Property
     
@@ -32,52 +33,25 @@ struct ContentView: View {
         }
     }
     
-    func loadFromDisk() {
-        ModelData.loadFromDisk { result in
-            switch result {
-            case .failure(let error):
-                fatalError("Error in loading modelData Array from file: "+error.localizedDescription)
-            case .success(let personArrayFromFile):
-                
-                print("Loading completed: ")
-                for person in personArrayFromFile {
-                    print(person.name)
-                }
-                DispatchQueue.main.async {
-                    self.modelData.friends = personArrayFromFile
-                }
-            }
-        }
-    }
-    
-    func saveToDisk() {
-        ModelData.save(friends: modelData.friends) { result in
-            switch result {
-            case .failure(let error):
-                fatalError("Error while saving friends Array in ModelData to file "+error.localizedDescription)
-            case .success(let savedPersonCount):
-                print("Saved "+String(savedPersonCount)+" Entities to file")
-            }
-        }
-    }
-
     
     var body: some View {
         NavigationView {
             VStack(alignment: .leading) {
                 Text("Shows the friend you visited last on top, go text them now!")
                     .foregroundColor(Color.gray)
-                    .padding([.top, .leading], 20.0)
+                    .padding([.top, .leading, .bottom], 20.0)
                 List {
                     ForEach(modelData.friends) {
                         friend in FriendRow(friend: friend)
                     }
                     .onDelete(perform: delete)
                 }
+                .listStyle(.plain)
                 .refreshable {
-                    loadFromDisk()
+                    modelData.loadFromDisk()
                 }
                     .navigationTitle("Last met")
+                    //.searchable(text: $searchFieldText)
                     .toolbar {
                         // Import Data
                         Button(action: {
@@ -91,7 +65,7 @@ struct ContentView: View {
                         ) { result in
                             switch result {
                             case .success(let files):
-                                ModelData.load(fileURL: files) { result in
+                                modelData.load(fileURL: files) { result in
                                     switch result {
                                     case .failure(let error):
                                         details = error
@@ -127,12 +101,12 @@ struct ContentView: View {
                     }
                 }
                 .sheet(isPresented: $isPresentingAddView) {
-                    AddNewPersonSheet(newPerson: newPerson, isPresentingAddView: $isPresentingAddView, function: addNewPerson)
+                    AddNewPersonSheet(newPerson: Person(), isPresentingAddView: $isPresentingAddView, returnPersonTo: modelData.addNewPerson)
                 }
             }
             .onChange(of: scenePhase) { phase in
                 if phase == .inactive {
-                    saveToDisk()
+                    modelData.saveToDisk()
                 }
             }
         }
@@ -142,6 +116,6 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
-            .environmentObject(ModelData())
+            .environment(ModelData())
     }
 }

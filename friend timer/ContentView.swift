@@ -14,12 +14,12 @@ struct ContentView: View {
     @State var newPerson: Person = Person()
     
     @State private var isPresentingAddView = false
-    @State private var importing = false
     @State private var errorOccured = false
     @State private var details: Error?
-    @State private var searchFieldText: String = ""
+
     
     @Environment(\.scenePhase) private var scenePhase   //operational State of the app gets saved to scenePhase from @Environment Property
+    
     
     func delete(at offsets: IndexSet) {
         modelData.friends.remove(atOffsets: offsets)
@@ -35,71 +35,13 @@ struct ContentView: View {
     
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(alignment: .leading) {
                 Text("Shows the friend you visited last on top, go text them now!")
                     .foregroundColor(Color.gray)
-                    .padding([.top, .leading, .bottom], 20.0)
-                List {
-                    ForEach(modelData.friends) {
-                        friend in FriendRow(friend: friend)
-                    }
-                    .onDelete(perform: delete)
-                }
-                .listStyle(.plain)
-                .refreshable {
-                    modelData.loadFromDisk()
-                }
-                    .navigationTitle("Last met")
-                    //.searchable(text: $searchFieldText)
-                    .toolbar {
-                        // Import Data
-                        Button(action: {
-                            importing = true
-                        }){
-                            Image(systemName: "square.and.arrow.down")
-                        }
-                        .fileImporter(
-                            isPresented: $importing,
-                            allowedContentTypes: [.json]
-                        ) { result in
-                            switch result {
-                            case .success(let files):
-                                modelData.load(fileURL: files) { result in
-                                    switch result {
-                                    case .failure(let error):
-                                        details = error
-                                        errorOccured = true
-                                    case .success(let personArrayFromFile):
-                                        modelData.friends = personArrayFromFile
-                                    }
-                                }
-                            case .failure(let error):
-                                details = error
-                                errorOccured = true
-                            }
-                        }
-                        .alert(
-                            "Failure Importing",
-                            isPresented: $errorOccured,
-                            presenting: details
-                        ) { details in }
-                        message: { details in
-                            Text(details.localizedDescription)
-                        }
-                        
-                        // Export Data
-                        ShareLink(item: modelData.friends, preview: SharePreview("Backup Data"))
-                        EditButton()
-                        
-                        // Add new Friend to List
-                        Button(action: {
-                            isPresentingAddView = true
-                        }){
-                            Image(systemName: "plus")
-                        }
-                    }
-                }
+                    .padding([.leading, .trailing], 20.0)
+                
+                FriendList(isPresentingAddView: $isPresentingAddView)
                 .sheet(isPresented: $isPresentingAddView) {
                     AddNewPersonSheet(newPerson: Person(), isPresentingAddView: $isPresentingAddView, returnPersonTo: modelData.addNewPerson)
                 }
@@ -109,9 +51,20 @@ struct ContentView: View {
                     modelData.saveToDisk()
                 }
             }
+            .alert(isPresented: Binding(get: {modelData.error != nil}, set: { if !$0 {modelData.error = nil} } ),
+                   error: modelData.error)
+            {
+                Button("Retry loading from disk"){
+                    modelData.loadFromDisk()
+                }
+                Button("Clear all data", role: .destructive){
+                    modelData.friends.removeAll()
+                    modelData.saveToDisk()      // overwrites the old save file with the current, probably empty, state, because there was an error
+                }
+            }
         }
     }
-
+}
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {

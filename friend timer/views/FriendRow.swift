@@ -9,40 +9,22 @@ import Foundation
 import SwiftUI
 
 struct FriendRow: View {
-    @State var friend: Person
+    @Bindable var friend: Person
     @State var showAlert: Bool = false
     @State var showSheet: Bool = false
+    @State var showDeleteConfirmation: Bool = false
 
     @Environment(ModelData.self) private var modelData: ModelData
 
     @StateObject var lastContactTimer = UpdaterViewModel() //Updates View every 60 second
-    
-    func setLastContactToNow(id: UUID) {
-        /*Takes in the id of a Person of which the lastContact property should be set to the Date "now"*/
-        
-        //Iterating over every Person in the friends array to find the one with the id where looking for, then setting its lastContact property to the Date "now"
-        modelData.friends.first(where: { $0.id == id} )?.lastContact = Date.now
-        
-        //sorting Persons from lastContact again, as this property could have changed
-        modelData.friends.sort {
-            $0.lastContact < $1.lastContact
-        }
-    
-    }
-    
-    func updatePerson(person: Person) -> Void {
-        friend.name = person.name
-        friend.lastContact = person.lastContact
-        friend.priority = person.priority
-        modelData.saveToDisk()
-    }
+
     
     func delete() {
         modelData.friends.removeAll(where: { $0.id == friend.id })
     }
     
     var body: some View {
-        Button(action: {showAlert = true}){
+        Button(action: {showSheet = true}){
             HStack{
                 VStack(alignment: .leading) {
                     Text(friend.name)
@@ -52,38 +34,46 @@ struct FriendRow: View {
 #warning("TODO: Live Update the date; (maybe: when SystemTime changes (a second went by) reload view)")
                 }
                 Spacer()
-                if (DateInterval(start: friend.lastContact, end: Date.now) > DateInterval(start: friend.lastContact, duration: 604800)) {
+                if (friend.isOverdue) {
                     Image(systemName: "clock.badge.exclamationmark")
                         .foregroundColor(Color(red: 1.0, green: 0.6, blue: 0.2, opacity: 1.0))
                 }
             }
         }
-        .swipeActions() {
+        .swipeActions(edge: .leading) {
             Button(action:{showSheet = true}) {
                 Label("Edit", systemImage: "pencil.line")
                     .labelStyle(IconOnlyLabelStyle())
                     .tint(.orange)
             }
-            Button(role: .destructive, action:{delete()}) {
+        }
+        .swipeActions() {
+            Button(action:{ showDeleteConfirmation = true } ) {
                 Label("Delete", systemImage: "trash")
                     .labelStyle(IconOnlyLabelStyle())
-                
             }
+            .tint(.red)
+        }
+        .confirmationDialog(
+            String("Delete \($friend.name.wrappedValue)'s entry?"),
+            isPresented: $showDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Yes", role: .destructive) {
+                withAnimation {delete()}
+            }
+//            Button("Cancel", role: .cancel) {
+//                showDeleteConfirmation = false
+//            }
         }
         .accentColor(/*@START_MENU_TOKEN@*/.black/*@END_MENU_TOKEN@*/)
         .sheet(isPresented: $showSheet, onDismiss: {
             //Alert(title: Text("Discard changes?"), primaryButton: .default(Text("No")), secondaryButton: .destructive(Text("Yes"), action: {showSheet = false}))
         }) {
-            AddNewPersonSheet(newPerson: friend.copy() as! Person, isPresentingAddView: $showSheet, returnPersonTo: updatePerson)
+            AddNewPersonSheet(newPerson: friend.copy() as! Person, isPresentingAddView: $showSheet, returnPersonTo: friend.update)
         }
         .alert("Reset timer?", isPresented: $showAlert) {
-            Button("No"){
-                
-            }
-            Button("Yes"){
-                setLastContactToNow(id: friend.id)
-                scheduleNotification(Person: friend)
-            }
+            ResetTimerView(friend: friend)
         }
 
     }

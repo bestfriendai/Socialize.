@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 
-var friendsSamples: [Person] = [Person(name: "Test1", lastContact: Date.now), Person(name: "Test 2", lastContact: Date.now.advanced(by: -5))]
+var friendsSamples: [Person] = [Person(name: "Test1", lastText: Date.now), Person(name: "Test 2", lastText: Date.now.advanced(by: -5))]
 
 
 

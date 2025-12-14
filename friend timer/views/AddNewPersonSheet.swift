@@ -10,7 +10,7 @@ import SwiftUI
 struct AddNewPersonSheet: View {
     @Bindable var newPerson: Person
     @Binding var isPresentingAddView: Bool
-    var returnPersonTo: (Person) -> Void
+    var returnPersonTo: (Person, () -> Void) -> Void
     
     @Environment(ModelData.self) private var modelData
     
@@ -21,15 +21,17 @@ struct AddNewPersonSheet: View {
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Cancel") {
-                            newPerson.clear()
                             isPresentingAddView = false
                         }
                     }
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Add") {
-                            returnPersonTo(newPerson)
-
+                            returnPersonTo(newPerson, modelData.saveToDisk)
+                            modelData.friends.sort {
+                                $0.lastContact < $1.lastContact
+                            }
                             isPresentingAddView = false
+                            removeNotification(Person: newPerson)       // if View is shown to edit an existing Person, remove its notification (if there is none, it gets ignored) and reschedule a new one to reflect the update that may have happend.
                             scheduleNotification(Person: newPerson)
                         }
                     }
@@ -39,5 +41,5 @@ struct AddNewPersonSheet: View {
 }
 
 #Preview {
-    AddNewPersonSheet(newPerson: Person(name: "Test Person", lastContact: Date(), priority: 1), isPresentingAddView: Binding.constant(true), returnPersonTo:  { _ in })
+    AddNewPersonSheet(newPerson: Person(name: "Test Person",  priority: 1), isPresentingAddView: Binding.constant(true), returnPersonTo:  { _,_  in })
 }

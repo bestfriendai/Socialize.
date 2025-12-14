@@ -20,25 +20,54 @@ import UniformTypeIdentifiers
     
     let id: UUID
     var name: String
-    var lastContact: Date
+    var lastContact: Date {
+        max(self.lastText, self.lastJointActivity)
+    }
+    var lastText: Date
+    var lastJointActivity: Date
     var priority: Int
+    var isOverdue: Bool {
+        return self.lastContact.timeIntervalSinceNow < TimeInterval(-(priority*24*60*60))
+    }
     
-    init(id: UUID = UUID(), name: String = "", lastContact: Date = Date.now, priority: Int = 0) {
+    init(id: UUID = UUID(), name: String = "", priority: Int = 7, lastText: Date = Date.now, lastJointActivity: Date = Date.now) {
         self.id = id
         self.name = name
-        self.lastContact = lastContact
         self.priority = priority
+        self.lastText = lastText
+        self.lastJointActivity = lastJointActivity
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case _name
+        case _priority
+        case _lastText
+        case _lastJointActivity
+    }
+    
+    // if a key can´t be decoded from the JSON file, don´t trow error but insert default value
+    required init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decodeIfPresent(String.self, forKey: ._name) ?? "Empty Name"
+        priority = try container.decodeIfPresent(Int.self, forKey: ._priority) ?? 0
+        lastText = try container.decodeIfPresent(Date.self, forKey: ._lastText) ?? Date.distantPast
+        lastJointActivity = try container.decodeIfPresent(Date.self, forKey: ._lastJointActivity) ?? Date.distantPast
     }
     
     func copy(with zone: NSZone? = nil) -> Any {
-        let copy = Person(name: self.name, lastContact: self.lastContact, priority: self.priority)
+        let copy = Person(name: self.name, priority: self.priority, lastText: self.lastText, lastJointActivity: self.lastJointActivity)
         return copy
     }
     
-    func clear() {
-        self.name = ""
-        self.lastContact = Date.now
-        self.priority = 0
+    func update(newPerson: Person, callbackSaveToDisk: (() -> Void)) {
+        self.name = newPerson.name
+        self.priority = newPerson.priority
+        self.lastText = newPerson.lastText
+        self.lastJointActivity = newPerson.lastJointActivity
+        callbackSaveToDisk()
     }
 }
 
@@ -53,23 +82,26 @@ import UniformTypeIdentifiers
         }
     })}
     }
+        
+    var error: AnyLocalizedError?
     
-    // make @Published variable conform to codable
+    init() {
+        
+    }
+    
+    required init(from decoder: any Decoder) {
+        do {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            friends = try container.decode([Person].self, forKey: ._friends)
+        } catch {
+            self.error = AnyLocalizedError(error)
+        }
+    }
+    
+    // make friends variable conform to codable
     enum CodingKeys: String, CodingKey {
         case _friends = "friends"
     }
-    
-    /* 
-    init(from decoder: any Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        friends = try container.decode([Person].self, forKey: .friends)
-    }
-    
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(friends, forKey: .friends)
-    }
-    */
     
     static var transferRepresentation: some TransferRepresentation {
         CodableRepresentation(contentType: .json)
@@ -82,12 +114,13 @@ import UniformTypeIdentifiers
             .appendingPathComponent("friends.data")
     }
     
-    func addNewPerson(person: Person) -> Void {
+    func addNewPerson(person: Person, callbackSaveToDisk: (() -> Void)) -> Void {
         //add a new friend struct with a given name and given date; if no date is provided it uses the current date
         self.friends.append(person)
         self.friends.sort {
             $0.lastContact < $1.lastContact
         }
+        callbackSaveToDisk()
     }
     
     
@@ -98,7 +131,8 @@ import UniformTypeIdentifiers
             load(fileURL: fileURL) { result in
                 switch result {
                 case .failure(let error):
-                    fatalError("Error in loading modelData Array from file: "+error.localizedDescription)
+                    self.error = AnyLocalizedError(error)
+                    //fatalError("Error in loading modelData Array from file: "+error.localizedDescription)
                 case .success(let personArrayFromFile):
                     DispatchQueue.main.async {
                         self.friends = personArrayFromFile
@@ -121,7 +155,7 @@ import UniformTypeIdentifiers
             do {
                 guard let file = try? FileHandle(forReadingFrom: fileURL) else {
                     DispatchQueue.main.async {
-                        completion(.success([]))
+                        completion(.failure(NSError(domain: "No file found", code: 0, userInfo: nil)))
                     }
                     return
                 }
@@ -180,17 +214,40 @@ extension Array: @retroactive Transferable where Element: Transferable, Element:
 }
 
 func formatDate(date:Date) -> String {
-    let formatStyle = Date.RelativeFormatStyle(
-                presentation: .named,
-                unitsStyle: .spellOut,
-                locale: Locale(identifier: "en_GB"),
-                calendar: Calendar.current,
-                capitalizationContext: .beginningOfSentence)
-    #warning("TODO: if relative time is under one minute display 'now' instead of seconds")
-    if date.distance(to: Date.now) > 86.400 {
-        return formatStyle.format(date)
-    }else{
-        return "today"
+    let formatStyle: Date.RelativeFormatStyle
+    if #available(iOS 18, *) {
+        formatStyle = Date.RelativeFormatStyle(
+            allowedFields: [.day],
+            presentation: .named,
+            unitsStyle: .spellOut,
+            locale: Locale(identifier: "en_GB"),
+            calendar: Calendar.current,
+            capitalizationContext: .beginningOfSentence)
+    } else {
+        formatStyle = Date.RelativeFormatStyle(
+            presentation: .named,
+            unitsStyle: .spellOut,
+            locale: Locale(identifier: "en_GB"),
+            calendar: Calendar.current,
+            capitalizationContext: .beginningOfSentence)
     }
+    #warning("TODO: if relative time is under one minute display 'now' instead of seconds")
+//    if abs(date.distance(to: Date.now)) > 86.400 {
+        return formatStyle.format(date)
+//    }else{
+//        return "today"
+//    }
 }
 
+
+struct AnyLocalizedError: LocalizedError {
+    private let base: Error
+    
+    init(_ base: Error) {
+        self.base = base
+    }
+    
+    var errorDescription: String? {
+        return base.localizedDescription
+    }
+}

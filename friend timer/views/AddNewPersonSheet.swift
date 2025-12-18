@@ -36,10 +36,12 @@ struct AddNewPersonSheet: View {
                         }
                     }
                 }
+            
         }
     }
 }
 
 #Preview {
     AddNewPersonSheet(newPerson: Person(name: "Test Person",  priority: 1), isPresentingAddView: Binding.constant(true), returnPersonTo:  { _,_  in })
+        .environment(ModelData())
 }

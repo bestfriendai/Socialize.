@@ -57,8 +57,13 @@ struct FriendList: View {
                                     case .failure(let error):
                                         modelData.error = AnyLocalizedError(error)
                                     case .success(let personArrayFromFile):
+                                        #warning("TODO: queue notifications for imported Person")
+                                        
                                         print(personArrayFromFile)
                                         DispatchQueue.main.async {
+                                            for friend in modelData.friends {
+                                                removeNotification(Person: friend)
+                                            }
                                             modelData.friends = personArrayFromFile
                                         }
                                         print("Loading completed: ")

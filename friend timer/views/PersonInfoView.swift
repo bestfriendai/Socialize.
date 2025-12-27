@@ -53,7 +53,7 @@ struct PersonInfoView: View {
                         Image(systemName: "text.badge.plus")
                         TextField("", text: $newSectionLabel, prompt: Text("Add new Section"))
                             .onSubmit {
-                                selectedPerson.notes.append(Note(title: newSectionLabel, content: ""))
+                                selectedPerson.notes.append(Note(title: newSectionLabel, content: "", type: newNoteCategory))
                                 newSectionLabel = ""
                             }
                             .submitLabel(.send)

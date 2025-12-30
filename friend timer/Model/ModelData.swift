@@ -12,6 +12,7 @@ import UniformTypeIdentifiers
 
 
 @Observable class ModelData: Codable, Transferable {
+    let contactStoreManager: ContactStoreManager
     var friends: [Person] = []
     { didSet {self.save(completion: {result in
         switch result {
@@ -26,7 +27,7 @@ import UniformTypeIdentifiers
     var error: AnyLocalizedError?
     
     init() {
-        
+        self.contactStoreManager = ContactStoreManager()
     }
     
     required init(from decoder: any Decoder) {
@@ -36,6 +37,7 @@ import UniformTypeIdentifiers
         } catch {
             self.error = AnyLocalizedError(error)
         }
+        self.contactStoreManager = ContactStoreManager()
     }
     
     // make friends variable conform to codable

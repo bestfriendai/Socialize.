@@ -16,6 +16,7 @@ let datesUntilNow = ...Date.now
 struct AddNewPersonView: View {
     
     @Bindable var newPerson: Person
+    @FocusState var nameTextFieldIsFocused: Bool
     #warning("TODO: refresh Date every second or so -> should always display current date in selector/if not changed add current Date (Date.now) to newPerson")
     
     //var dateComponentsNow: DateComponents = Calendar.current.dateComponents([] , from: Date.now)
@@ -33,6 +34,8 @@ struct AddNewPersonView: View {
                     Form {
                         Section(header: Text("Name")) {
                             TextField("New Name", text: $newPerson.name)
+                                .focused($nameTextFieldIsFocused)
+                            ContactAutocompleteList(newPerson: newPerson, searchFieldText: $newPerson.name, nameTextFieldIsFocused: _nameTextFieldIsFocused, isPresentingAddView: .constant(true))
                         }
                         Section(header: Text("Time of last Meeting")) {
                             DatePicker(selection: $newPerson.lastJointActivity, in: datesUntilNow ,label: {Text("Last met:") })

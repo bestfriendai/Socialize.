@@ -96,6 +96,9 @@ struct FriendList: View {
 //                  Add new Friend to List
                     Button(action: {
                         isPresentingAddView = true
+                        Task {
+                            await modelData.contactStoreManager.fetchContacts()
+                        }
                     }){
                         Image(systemName: "plus")
                     }
@@ -107,10 +110,10 @@ struct FriendList: View {
     
 }
 
-#Preview {
+#Preview(traits: .modifier(SampleData())) {
     FriendList(isPresentingAddView: .constant(true))
-        .environment(ModelData())
 }
+
 
 //struct FriendList_Previews: PreviewProvider {
 //    var modelData = ModelData()

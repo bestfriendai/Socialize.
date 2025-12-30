@@ -81,7 +81,7 @@ struct FriendRow: View {
 
 struct FriendRow_Previews: PreviewProvider {
     static var previews: some View {
-        FriendRow(friend: friendsSamples[0])
-        //FriendRow(friend: Person(name: "Test1", lastContact: Date.now, priority: 0))
+        //FriendRow(friend: friendsSamples[0])
+        FriendRow(friend: Person(name: "Test1", priority: 0, lastText: Date.now))
     }
 }

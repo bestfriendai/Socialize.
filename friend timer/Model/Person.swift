@@ -83,11 +83,11 @@ import SwiftUI
     var intValue: Int
     var type: noteTypeEnum
     
-    init(title: String, content: String, type: noteTypeEnum = .text) {
+    init(title: String, content: String, date: Date = Date(), type: noteTypeEnum = .text) {
         self.id = UUID()
         self.title = title
         self.content = content
-        self.date = Date()
+        self.date = date
         self.intValue = 0
         self.type = type
     }
